@@ -3,3 +3,5 @@ body{background: #333; font-size:xx-large;}
 
 h2 span, section h3{display:none;}
 footer, input { font-size: large;}
+
+.searcher input[type="text"] { display: block; width: 100%;}
