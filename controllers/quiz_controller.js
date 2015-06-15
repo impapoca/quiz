@@ -22,7 +22,8 @@ exports.index = function(req, res) {
 		search = req.query.search.replace(/\s+/g, '%');
 
 	var options = {
-		where: ["pregunta like ?", '%' + search + '%', order: 'pregunta ASC'] 
+		where: ["pregunta like ?", '%' + search + '%'],
+		order: 'pregunta ASC'
 	};
 	console.log(options);
 
