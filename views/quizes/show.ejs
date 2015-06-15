@@ -1,5 +1,9 @@
 <form method="get" action="/quizes/<%= quiz.id %>/answer">
             <p>
+                Tema: <%= quiz.tematica %> 
+            </p>
+            <br />
+            <p>
                 Pregunta: <%= quiz.pregunta %> 
             </p>
             <input type="text" name="respuesta" placeholder="Responda aqu&iacute;" />

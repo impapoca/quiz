@@ -25,18 +25,17 @@ exports.index = function(req, res) {
 		where: ["pregunta like ?", '%' + search + '%'],
 		order: 'pregunta ASC'
 	};
-	console.log(options);
 
 	models.Quiz.findAll(options).then(
     function(quizes) {
-    	res.render('quizes/index', {quizes: quizes, search: search});
+    	res.render('quizes/index', {quizes: quizes, search: search, errors: []});
     }
   ).catch(function (error) { next(error); });
 };
 
 // get /quizes/:id
 exports.show = function(req, res) {
-	res.render('quizes/show', { quiz: req.quiz });	
+	res.render('quizes/show', { quiz: req.quiz, errors: [] });	
 };
 
 // get /quizes/:id/answer
@@ -48,7 +47,91 @@ exports.answer = function(req, res) {
 
 	res.render('quizes/answer', 
 		{
-			quiz: req.quiz, respuesta: resultado
+			quiz: req.quiz, 
+			respuesta: resultado, 
+			errors: []
 		}
 	);
 };
+
+// get /quizes/new
+exports.new = function(req, res) {
+	var quiz = models.Quiz.build(
+	{
+		pregunta: 'Pregunta', respuesta: 'Respuesta'
+	});
+
+	res.render('quizes/new', {quiz: quiz, errors: []});
+};
+
+// POST /quizes/create
+exports.create = function(req, res) {
+	var quiz = models.Quiz.build( req.body.quiz );
+
+	quiz
+	.validate()
+	.then(
+		function(err){
+			if (err) {
+				res.render('/quiz/new', {quiz: quiz, errors: err.errors});
+			}else {
+				quiz
+				.save(
+					{
+						fields : ['pregunta', 'respuesta', 'tematica']
+					}
+				)
+				.then(function(){ 
+					res.redirect('/quizes');
+				})
+			}
+		}
+	)
+
+};
+
+//GET /quizes/:id/edit
+exports.edit = function(req, res) {
+	var quiz = req.quiz;
+
+
+	res.render('quizes/edit', {quiz: quiz, errors: []});
+}
+
+
+// PUT /quizes/:id
+exports.update = function(req, res) {
+	req.quiz.pregunta = req.body.quiz.pregunta;
+	req.quiz.respuesta = req.body.quiz.respuesta;
+	req.quiz.tematica = req.body.quiz.tematica;
+
+
+	req.quiz
+	.validate()
+	.then(
+		function(err){
+			if (err) {
+				res.render('/quizes/edit', {quiz: req.quiz, errors: err.errors});
+			}else {
+				req.quiz
+				.save(
+					{
+						fields : ['pregunta', 'respuesta', 'tematica']
+					}
+				)
+				.then(function(){ 
+					res.redirect('/quizes');
+				})
+			}
+		}
+	)
+
+};
+
+// DELETE /quiz/:id
+exports.destroy = function(req, res) {
+	req.quiz.destroy().then(function (){
+		res.redirect('/quizes');
+	}).catch(function(error){ next(error)});
+};
+
