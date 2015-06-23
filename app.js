@@ -6,6 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var partials = require('express-partials');
 var methodOverride = require('method-override');
+var session = require('express-session');
 
 var routes = require('./routes/index');
 
@@ -22,9 +23,47 @@ app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
-app.use(cookieParser());
+app.use(cookieParser('Quiz 2015'));
+app.use(session());
 app.use(methodOverride('_method'));
 app.use(express.static(path.join(__dirname, 'public')));
+
+// Helpers dinamicos
+app.use(function(req, res, next){
+  //guardar path en session.redir para despues de login
+  if (!req.path.match(/\7login|\/logout/)){
+    req.session.redir = req.path;
+  }
+
+  // hacer visible req.session en las vistas
+  res.locals.session = req.session;
+  next();
+
+});
+// auto logout
+app.use(function(req, res, next){
+  if (req.session.user === undefined){
+    return next();
+  }
+
+  dateNow = new Date().getTime();
+  maxTimeLogged = 2 * 60 * 1000; 
+
+  if ( req.session.lastRequestTime === undefined)
+    req.session.lastRequestTime = dateNow;
+  else {
+    
+    if ( (req.session.lastRequestTime + maxTimeLogged) < dateNow ){
+      delete req.session.user;
+    } else {
+      req.session.lastRequestTime = dateNow;
+    }
+
+  }
+  next();
+  
+
+});
 
 app.use('/', routes);
 
